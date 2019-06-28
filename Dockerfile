@@ -32,7 +32,8 @@ WORKDIR "${CONFIGDIR}"
 RUN wget https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugin/v1.30/postfwd-anti-spam.plugin \
  && wget https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugin/v1.30/anti-spam-sql-st.conf \
  && wget https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugin/v1.30/anti-spam.conf \
- && sed -i 's/^logfile =.*/logfile =/' anti-spam.conf 
+ && sed -i 's/^logfile =.*/logfile =/' anti-spam.conf \
+ && sed -i 's;^geoip_db_path =.*;geoip_db_path = /usr/local/share/GeoIP/GeoIP.dat;' anti-spam.conf
 
 WORKDIR /tmp/
 
