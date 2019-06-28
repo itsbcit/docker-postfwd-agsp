@@ -19,15 +19,30 @@ ENV GROUP postfw
 ENV UID 110
 ENV GID 110
 
-RUN apk update && apk add \
-    make \
-    perl-app-cpanminus \
-    perl-config-any \
-    perl-config-tiny \
-    perl-dbi \
-    perl-dbd-mysql \
-    perl-dbd-pg \
-    perl-sys-mmap
+RUN apk --no-cache update \
+ && apk --no-cache add \
+        # wget \
+        make \
+        gcc \
+        perl-dev \
+        musl-dev \
+        # geoip \
+        geoip-dev \
+        # build-base \
+        # perl-utils \
+        perl-app-cpanminus \
+        perl-config-any \
+        perl-config-tiny \
+        perl-dbi \
+        perl-dbd-mysql \
+        perl-dbd-pg \
+        perl-sys-mmap
+
+RUN cpanm --no-wget \
+          Geo::IP \
+          Config::General \
+          # IO::Handle \
+  && rm -rf ~/.cpanm
 
 WORKDIR "${CONFIGDIR}"
 
@@ -37,10 +52,6 @@ RUN wget https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugi
  && sed -i 's/^logfile =.*/logfile =/' anti-spam.conf \
  && sed -i 's;^geoip_db_path =.*;geoip_db_path = /usr/local/share/GeoIP/GeoIP.dat;' anti-spam.conf \
  && sed -i 's;/etc/postfix/;/etc/postfwd/;g' postfwd-anti-spam.plugin
-
-WORKDIR /tmp/
-
-RUN cpanm --no-wget Geo::IP Config::General
 
 RUN mkdir -p /usr/local/share/GeoIP
 COPY GeoIP*.dat /usr/local/share/GeoIP/
