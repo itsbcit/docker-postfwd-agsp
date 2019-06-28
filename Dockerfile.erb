@@ -54,5 +54,5 @@ CMD /usr/sbin/${PROG} --file="/etc/postfwd/${CONF}" \
     --save_rates="${HOME}/postfwd.rates" \
     --save_groups="${HOME}/postfwd.groups" \
     --pidfile="${HOME}/postfwd.pid" \
-    --stdout --nodaemon \
-    ${EXTRA}
+    ${EXTRA} \
+    --stdout --nodaemon
