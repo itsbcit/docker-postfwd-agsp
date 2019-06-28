@@ -23,9 +23,11 @@ RUN apk update && apk add \
     make \
     perl-app-cpanminus \
     perl-config-any \
+    perl-config-tiny \
     perl-dbi \
     perl-dbd-mysql \
-    perl-dbd-pg
+    perl-dbd-pg \
+    perl-sys-mmap
 
 WORKDIR "${CONFIGDIR}"
 
@@ -33,11 +35,12 @@ RUN wget https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugi
  && wget https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugin/v1.30/anti-spam-sql-st.conf \
  && wget https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugin/v1.30/anti-spam.conf \
  && sed -i 's/^logfile =.*/logfile =/' anti-spam.conf \
- && sed -i 's;^geoip_db_path =.*;geoip_db_path = /usr/local/share/GeoIP/GeoIP.dat;' anti-spam.conf
+ && sed -i 's;^geoip_db_path =.*;geoip_db_path = /usr/local/share/GeoIP/GeoIP.dat;' anti-spam.conf \
+ && sed -i 's;/etc/postfix/;/etc/postfwd/;g' postfwd-anti-spam.plugin
 
 WORKDIR /tmp/
 
-RUN cpanm --no-wget Geo::IP
+RUN cpanm --no-wget Geo::IP Config::General
 
 RUN mkdir -p /usr/local/share/GeoIP
 COPY GeoIP*.dat /usr/local/share/GeoIP/
