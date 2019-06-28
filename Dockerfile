@@ -21,28 +21,28 @@ ENV GID 110
 
 RUN apk --no-cache update \
  && apk --no-cache add \
-        # wget \
-        make \
-        gcc \
-        perl-dev \
-        musl-dev \
-        # geoip \
-        geoip-dev \
-        # build-base \
-        # perl-utils \
-        perl-app-cpanminus \
-        perl-config-any \
-        perl-config-tiny \
-        perl-dbi \
-        perl-dbd-mysql \
-        perl-dbd-pg \
-        perl-sys-mmap
+    # wget \
+    make \
+    gcc \
+    perl-dev \
+    musl-dev \
+    # geoip \
+    geoip-dev \
+    # build-base \
+    # perl-utils \
+    perl-app-cpanminus \
+    perl-config-any \
+    perl-config-tiny \
+    perl-dbi \
+    perl-dbd-mysql \
+    perl-dbd-pg \
+    perl-sys-mmap
 
 RUN cpanm --no-wget \
-          Geo::IP \
-          Config::General \
-          # IO::Handle \
-  && rm -rf ~/.cpanm
+    Geo::IP \
+    Config::General \
+    # IO::Handle \
+ && rm -rf ~/.cpanm
 
 WORKDIR "${CONFIGDIR}"
 
