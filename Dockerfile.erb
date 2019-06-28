@@ -6,6 +6,9 @@
 #   ENV DB_HOST 
 #   ENV DB_PORT
 #
+# Run container with the following: 
+#
+# docker run -e DB_DBNAME=DATABASE_NAME -e DB_HOST=DATABASE_HOST -e DB_PORT=3306 -e DB_PASSWORD=DATABASE_PASSWORD -e DB_USERID=DATABASE_USERID bcit/docker-postfwd-agsp:latest
 
 FROM bcit/docker-postfwd:2.02
 
