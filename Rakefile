@@ -11,7 +11,7 @@ end
 
 maintainer = 'David_Goodwin@bcit.ca, Juraj Ontkanin'
 org_name = 'bcit'
-image_name = 'docker-postfwd-agsp'
+image_name = 'docker-postfwd-agsp-2'
 version = '1.30'
 version_segments = version.split('.')
 tags = [

@@ -1,59 +1,84 @@
+# Pass as environment variables:
+#
+#   ENV DB_DBNAME 
+#   ENV DB_PASSWORD
+#   ENV DB_USERID
+#   ENV DB_HOST 
+#   ENV DB_PORT
+#
+
 FROM bcit/docker-postfwd:2.02
-# vim: syntax=dockerfile
 
 LABEL maintainer="<%= maintainer %>"
 LABEL version="<%= version %>"
 
-ENV CONFIGDIR /config
-
+# Use postfwd3 by default
 ENV PROG postfwd3
-ENV ADDRESS 0.0.0.0
-ENV PORT 10040
-ENV CACHE 60
-ENV EXTRA "--summary=600 --noidlestats"
-ENV CONF postfwd.cf
 
-ENV HOME /var/lib/postfwd
-ENV USER postfw 
-ENV GROUP postfw
-ENV UID 110
-ENV GID 110
+ENV POSTFWD_ANTISPAM_MAIN_CONFIG_PATH=${CONFIGDIR}/anti-spam.conf
+ENV POSTFWD_ANTISPAM_SQL_STATEMENTS_CONFIG_PATH=${CONFIGDIR}/anti-spam-sql-st.conf
 
-RUN apk update && apk add \
-    make \
-    perl-app-cpanminus \
-    perl-config-any \
-    perl-dbi \
-    perl-dbd-mysql \
-    perl-dbd-pg
+# Install build tools
+# Build and Install modules
+# Cleanup
+RUN apk --no-cache update \
+ && apk --no-cache add  make \
+                        wget \
+                        gcc \
+                        build-base \
+                        perl-utils \
+                        perl-dev \
+                        geoip-dev \
+                        postgresql-dev \
+                        mysql-dev \
+ && cpan    App::cpanminus \
+ && cpanm   Geo::IP \
+            IO::Handle \
+            Config::General \
+            Config::Tiny \
+            Config::Any::INI \
+            Config::Any::General \
+            DBI \
+            DBD::Pg \
+            DBD::mysql \
+            Sys::Mmap \
+ && apk del make \
+            wget \
+            gcc \
+            build-base \
+            perl-utils \
+            perl-dev \
+ && rm -rf ~/.cpanm
 
-WORKDIR "${CONFIGDIR}"
-
-RUN wget https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugin/v<%= version %>/postfwd-anti-spam.plugin \
- && wget https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugin/v<%= version %>/anti-spam-sql-st.conf \
+# Download GeoIP dat files 
+# Download config files and store in config dir (/config/)
+# Download plugin 
+RUN mkdir /usr/local/share/GeoIP/ \
+ && wget https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugin/v<%= version %>/docker/GeoIP.dat \
+         https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugin/v<%= version %>/docker/GeoIPv6.dat -P /usr/local/share/GeoIP/ \
  && wget https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugin/v<%= version %>/anti-spam.conf \
- && sed -i 's/^logfile =.*/logfile =/' anti-spam.conf \
- && sed -i 's;^geoip_db_path =.*;geoip_db_path = /usr/local/share/GeoIP/GeoIP.dat;' anti-spam.conf
+         https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugin/v<%= version %>/anti-spam-sql-st.conf -P ${CONFIGDIR} \
+ && wget https://raw.githubusercontent.com/Vnet-as/postfwd-anti-geoip-spam-plugin/v<%= version %>/postfwd-anti-spam.plugin -P ${HOME}
 
-WORKDIR /tmp/
-
-RUN cpanm --no-wget Geo::IP
-
-RUN mkdir -p /usr/local/share/GeoIP
-COPY GeoIP*.dat /usr/local/share/GeoIP/
-
-WORKDIR /
+# Permissions 
+RUN chown postfw:postfw ${HOME}/postfwd-anti-spam.plugin \
+ && chown postfw:postfw ${CONFIGDIR}/anti-spam-sql-st.conf \
+ && chmod 644 \
+          ${HOME}/postfwd-anti-spam.plugin \
+          ${CONFIGDIR}/anti-spam-sql-st.conf
 
 EXPOSE ${PORT}
 
+COPY 70-sed-db-settings.sh docker-entrypoint.d/ 
+
 CMD /usr/sbin/${PROG} --file="/etc/postfwd/${CONF}" \
-    --plugins /etc/postfwd/postfwd-anti-spam.plugin \
     --user=${USER} --group=${GROUP} \
+    --plugins="${HOME}/postfwd-anti-spam.plugin" \
     --server_socket=tcp:${ADDRESS}:${PORT} \
     --cache_socket="unix::${HOME}/postfwd.cache" \
     --cache=${CACHE} \
     --save_rates="${HOME}/postfwd.rates" \
     --save_groups="${HOME}/postfwd.groups" \
     --pidfile="${HOME}/postfwd.pid" \
-    ${EXTRA} \
-    --stdout --nodaemon
+    --stdout --nodaemon \
+    ${EXTRA}
