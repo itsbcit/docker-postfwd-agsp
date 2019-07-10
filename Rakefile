@@ -34,7 +34,7 @@ end
 
 desc "Build docker images"
 task :build do
-  sh "docker build --no-cache -t #{org_name}/#{image_name}:#{version} ."
+  sh "docker build -t #{org_name}/#{image_name}:#{version} . --no-cache --pull"
 end
 
 desc "Test docker images"
