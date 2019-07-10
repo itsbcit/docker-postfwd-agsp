@@ -4,6 +4,8 @@ FROM bcit/docker-postfwd:2.02
 LABEL maintainer="David_Goodwin@bcit.ca, Juraj Ontkanin"
 LABEL version="1.30"
 
+ENV DOCKERIZE_ENV production
+
 ENV CONFIGDIR /config
 
 ENV PROG postfwd3

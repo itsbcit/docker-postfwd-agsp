@@ -4,6 +4,8 @@ FROM bcit/docker-postfwd:2.02
 LABEL maintainer="<%= maintainer %>"
 LABEL version="<%= version %>"
 
+ENV DOCKERIZE_ENV production
+
 ENV CONFIGDIR /config
 
 ENV PROG postfwd3
